@@ -1,10 +1,14 @@
 package dev.hapax.watch.ui
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,6 +18,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -32,13 +37,45 @@ private val Context.dataStore by preferencesDataStore(name = "settings")
 
 class SettingsActivity : ComponentActivity() {
 
+    private val requiredPermissions = arrayOf(
+        Manifest.permission.BODY_SENSORS,
+        Manifest.permission.ACTIVITY_RECOGNITION,
+    )
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { results ->
+        val allGranted = results.values.all { it }
+        Log.i(TAG, "Permissions result: $results, allGranted=$allGranted")
+        if (!allGranted) {
+            Log.w(TAG, "Some permissions denied — sensors may be unavailable")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestMissingPermissions()
         setContent {
             HapaxWatchTheme {
                 SettingsScreen()
             }
         }
+    }
+
+    private fun requestMissingPermissions() {
+        val missing = requiredPermissions.filter { perm ->
+            ContextCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED
+        }
+        if (missing.isNotEmpty()) {
+            Log.i(TAG, "Requesting permissions: $missing")
+            permissionLauncher.launch(missing.toTypedArray())
+        } else {
+            Log.i(TAG, "All permissions already granted")
+        }
+    }
+
+    companion object {
+        private const val TAG = "SettingsActivity"
     }
 }
 
