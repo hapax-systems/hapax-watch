@@ -24,7 +24,8 @@ SensorPayload JSON matches `watch_receiver.py` on the council side. Readings arr
 
 ## Sprint Roadmap
 
-1. Skeleton + Transport (fake data, HTTP POST) -- current
-2. Real sensors via Health Services API
-3. mDNS discovery, DataStore persistence
-4. Tiles, complications
+1. Skeleton + Transport (fake data, HTTP POST) -- done
+2. Real sensors via Health Services API -- done
+3. mDNS discovery, network resilience, DataStore persistence -- done
+4. Status tile, haptic notifications, voice trigger -- done
+5. Complications, watch face integration

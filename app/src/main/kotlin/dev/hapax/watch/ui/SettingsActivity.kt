@@ -10,6 +10,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,7 +19,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -85,12 +91,21 @@ fun SettingsScreen() {
     val scope = rememberCoroutineScope()
 
     val serverIpKey = stringPreferencesKey("server_ip")
+    val manualIpKey = stringPreferencesKey("manual_ip")
     val serviceEnabledKey = booleanPreferencesKey("service_enabled")
 
     var serverIp by remember {
         mutableStateOf(
             runBlocking {
                 context.dataStore.data.map { it[serverIpKey] ?: "" }.first()
+            }
+        )
+    }
+
+    var manualIp by remember {
+        mutableStateOf(
+            runBlocking {
+                context.dataStore.data.map { it[manualIpKey] ?: "" }.first()
             }
         )
     }
@@ -103,6 +118,10 @@ fun SettingsScreen() {
         )
     }
 
+    // Connection status display
+    var connectionStatus by remember { mutableStateOf("disconnected") }
+    var mdnsAddress by remember { mutableStateOf<String?>(null) }
+
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -110,7 +129,62 @@ fun SettingsScreen() {
             Text(text = "Hapax Watch")
         }
         item {
+            // Connection status with colored dot
+            val (statusColor, statusLabel) = when (connectionStatus) {
+                "connected" -> Color(0xFF55FF55) to "Connected"
+                "buffering" -> Color(0xFFFFFF55) to "Buffering"
+                else -> Color(0xFFFF5555) to "Disconnected"
+            }
+            Text(
+                text = "\u25CF $statusLabel",
+                color = statusColor,
+            )
+        }
+        item {
             Text(text = "Server: ${serverIp.ifEmpty { "(not set)" }}")
+        }
+        // Show mDNS discovered address if found
+        if (mdnsAddress != null) {
+            item {
+                Text(
+                    text = "mDNS: $mdnsAddress",
+                    color = Color(0xFF55FFFF),
+                )
+            }
+        }
+        item {
+            Text(text = "Manual IP:")
+        }
+        item {
+            BasicTextField(
+                value = manualIp,
+                onValueChange = { value ->
+                    manualIp = value
+                    scope.launch {
+                        context.dataStore.edit { prefs ->
+                            prefs[manualIpKey] = value
+                        }
+                    }
+                },
+                textStyle = TextStyle(
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                ),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { innerTextField ->
+                    if (manualIp.isEmpty()) {
+                        Text(
+                            text = "10.0.0.1:8042",
+                            color = Color(0xFF808080),
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                    innerTextField()
+                },
+            )
         }
         item {
             Button(

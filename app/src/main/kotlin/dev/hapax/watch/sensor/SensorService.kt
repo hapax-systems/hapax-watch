@@ -49,8 +49,7 @@ class SensorService : Service() {
     override fun onCreate() {
         super.onCreate()
         buffer = SensorBuffer()
-        // Default URL; in Sprint 3 this will come from DataStore/mDNS
-        transport = HapaxTransport("http://10.0.2.2:8051")
+        transport = HapaxTransport(this)
         handler = Handler(Looper.getMainLooper())
         connectivityHelper = ConnectivityHelper(this)
     }
@@ -69,9 +68,12 @@ class SensorService : Service() {
         // Log device info
         logDeviceInfo()
 
-        // Request WiFi to stay active
+        // Request WiFi to stay active; invalidate mDNS cache on network change
         connectivityHelper.requestWifi { available ->
             Log.i(TAG, "Network available: $available")
+            if (!available) {
+                transport.invalidateCache()
+            }
         }
 
         // Discover and start available sensor collectors
@@ -121,9 +123,9 @@ class SensorService : Service() {
                 if (available) {
                     collector.start(buffer)
                     collectors.add(collector)
-                    Log.i(TAG, "✓ ${collector.type} — started")
+                    Log.i(TAG, "Started ${collector.type}")
                 } else {
-                    Log.i(TAG, "✗ ${collector.type} — not available on this device")
+                    Log.i(TAG, "${collector.type} — not available on this device")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to start ${collector.type}: ${e.message}", e)
