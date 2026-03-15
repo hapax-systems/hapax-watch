@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "dev.hapax.watch"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "dev.hapax.watch"

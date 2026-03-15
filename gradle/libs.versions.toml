@@ -17,9 +17,9 @@ wear-compose-material = { module = "androidx.wear.compose:compose-material3", ve
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
 health-services = { module = "androidx.health:health-services-client", version.ref = "health-services" }
 tiles = { module = "androidx.wear.tiles:tiles", version.ref = "tiles" }
-tiles-material = { module = "androidx.wear.tiles:tiles-material3", version.ref = "tiles" }
+tiles-material = { module = "androidx.wear.tiles:tiles-material", version.ref = "tiles" }
 protolayout = { module = "androidx.wear.protolayout:protolayout", version.ref = "protolayout" }
-protolayout-material = { module = "androidx.wear.protolayout:protolayout-material3", version.ref = "protolayout" }
+protolayout-material = { module = "androidx.wear.protolayout:protolayout-material", version.ref = "protolayout" }
 protolayout-expression = { module = "androidx.wear.protolayout:protolayout-expression", version.ref = "protolayout" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 datastore-prefs = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }

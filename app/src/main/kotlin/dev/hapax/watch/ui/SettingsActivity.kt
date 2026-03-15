@@ -19,8 +19,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.Text
-import androidx.wear.compose.material3.ToggleButton
 import dev.hapax.watch.sensor.SensorService
 import dev.hapax.watch.ui.theme.HapaxWatchTheme
 import kotlinx.coroutines.flow.first
@@ -76,9 +76,9 @@ fun SettingsScreen() {
             Text(text = "Server: ${serverIp.ifEmpty { "(not set)" }}")
         }
         item {
-            ToggleButton(
-                checked = serviceEnabled,
-                onCheckedChange = { enabled ->
+            Button(
+                onClick = {
+                    val enabled = !serviceEnabled
                     serviceEnabled = enabled
                     scope.launch {
                         context.dataStore.edit { prefs ->
@@ -92,9 +92,8 @@ fun SettingsScreen() {
                         context.stopService(intent)
                     }
                 },
-            ) {
-                Text(if (serviceEnabled) "Service ON" else "Service OFF")
-            }
+                label = { Text(if (serviceEnabled) "Service ON" else "Service OFF") },
+            )
         }
     }
 }
