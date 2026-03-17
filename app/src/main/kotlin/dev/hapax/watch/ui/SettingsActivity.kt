@@ -2,7 +2,6 @@ package dev.hapax.watch.ui
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,31 +21,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import dev.hapax.watch.data.dataStore
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
-import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.Text
 import dev.hapax.watch.sensor.SensorService
 import dev.hapax.watch.ui.theme.HapaxWatchTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-private val Context.dataStore by preferencesDataStore(name = "settings")
 
 class SettingsActivity : ComponentActivity() {
 
     private val requiredPermissions = arrayOf(
         Manifest.permission.BODY_SENSORS,
         Manifest.permission.ACTIVITY_RECOGNITION,
+        Manifest.permission.BLUETOOTH_CONNECT,
     )
 
     private val permissionLauncher = registerForActivityResult(
@@ -90,17 +92,7 @@ fun SettingsScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val serverIpKey = stringPreferencesKey("server_ip")
     val manualIpKey = stringPreferencesKey("manual_ip")
-    val serviceEnabledKey = booleanPreferencesKey("service_enabled")
-
-    var serverIp by remember {
-        mutableStateOf(
-            runBlocking {
-                context.dataStore.data.map { it[serverIpKey] ?: "" }.first()
-            }
-        )
-    }
 
     var manualIp by remember {
         mutableStateOf(
@@ -110,17 +102,29 @@ fun SettingsScreen() {
         )
     }
 
-    var serviceEnabled by remember {
-        mutableStateOf(
-            runBlocking {
-                context.dataStore.data.map { it[serviceEnabledKey] ?: false }.first()
-            }
-        )
-    }
-
-    // Connection status display
+    // Live status from SharedPreferences
     var connectionStatus by remember { mutableStateOf("disconnected") }
-    var mdnsAddress by remember { mutableStateOf<String?>(null) }
+    var serverUrl by remember { mutableStateOf("") }
+    var lastFlushTime by remember { mutableStateOf(0L) }
+    var bufferSize by remember { mutableStateOf(0) }
+    var activeSensors by remember { mutableStateOf("") }
+    var lastHr by remember { mutableStateOf(0f) }
+
+    // Auto-refresh status every 3 seconds
+    LaunchedEffect(Unit) {
+        while (true) {
+            val prefs = context.getSharedPreferences(
+                SensorService.STATUS_PREFS, Context.MODE_PRIVATE
+            )
+            connectionStatus = prefs.getString("connection_status", "disconnected") ?: "disconnected"
+            serverUrl = prefs.getString("server_url", "") ?: ""
+            lastFlushTime = prefs.getLong("last_flush_time", 0L)
+            bufferSize = prefs.getInt("buffer_size", 0)
+            activeSensors = prefs.getString("active_sensors", "") ?: ""
+            lastHr = prefs.getFloat("last_hr", 0f)
+            delay(3000)
+        }
+    }
 
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -140,14 +144,32 @@ fun SettingsScreen() {
                 color = statusColor,
             )
         }
-        item {
-            Text(text = "Server: ${serverIp.ifEmpty { "(not set)" }}")
-        }
-        // Show mDNS discovered address if found
-        if (mdnsAddress != null) {
+        // Heart rate
+        if (lastHr > 0) {
             item {
                 Text(
-                    text = "mDNS: $mdnsAddress",
+                    text = "\u2665 ${lastHr.toInt()} bpm",
+                    color = Color(0xFFFF6B6B),
+                )
+            }
+        }
+        item {
+            Text(text = "Server: ${serverUrl.ifEmpty { "(none)" }}")
+        }
+        item {
+            Text(text = "Buffer: $bufferSize readings")
+        }
+        if (lastFlushTime > 0) {
+            item {
+                val timeStr = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                    .format(Date(lastFlushTime))
+                Text(text = "Last flush: $timeStr")
+            }
+        }
+        if (activeSensors.isNotEmpty()) {
+            item {
+                Text(
+                    text = "Sensors: $activeSensors",
                     color = Color(0xFF55FFFF),
                 )
             }
@@ -176,7 +198,7 @@ fun SettingsScreen() {
                 decorationBox = { innerTextField ->
                     if (manualIp.isEmpty()) {
                         Text(
-                            text = "10.0.0.1:8042",
+                            text = "ip:port",
                             color = Color(0xFF808080),
                             fontSize = 14.sp,
                             textAlign = TextAlign.Center,
@@ -184,26 +206,6 @@ fun SettingsScreen() {
                     }
                     innerTextField()
                 },
-            )
-        }
-        item {
-            Button(
-                onClick = {
-                    val enabled = !serviceEnabled
-                    serviceEnabled = enabled
-                    scope.launch {
-                        context.dataStore.edit { prefs ->
-                            prefs[serviceEnabledKey] = enabled
-                        }
-                    }
-                    val intent = Intent(context, SensorService::class.java)
-                    if (enabled) {
-                        context.startForegroundService(intent)
-                    } else {
-                        context.stopService(intent)
-                    }
-                },
-                label = { Text(if (serviceEnabled) "Service ON" else "Service OFF") },
             )
         }
     }

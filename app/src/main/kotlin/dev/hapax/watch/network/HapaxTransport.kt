@@ -1,10 +1,10 @@
 package dev.hapax.watch.network
 
 import android.content.Context
+import dev.hapax.watch.data.dataStore
 import android.os.Build
 import android.util.Log
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import dev.hapax.watch.data.SensorBuffer
 import dev.hapax.watch.data.SensorPayload
 import kotlinx.coroutines.flow.first
@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
-private val Context.dataStore by preferencesDataStore(name = "settings")
 
 /**
  * Transports sensor data to the hapax workstation.
@@ -89,8 +88,8 @@ class HapaxTransport(private val context: Context) {
         }
 
         val payload = SensorPayload(
-            ts = System.currentTimeMillis() / 1000,
-            deviceId = Build.MODEL,
+            ts = System.currentTimeMillis(),
+            deviceId = "pw4",
             batteryPct = null, // TODO: read actual battery
             readings = readings,
         )
@@ -99,7 +98,7 @@ class HapaxTransport(private val context: Context) {
             .toRequestBody(JSON_MEDIA_TYPE)
 
         val request = Request.Builder()
-            .url("$baseUrl/ingest/watch")
+            .url("$baseUrl/watch/sensors")
             .post(body)
             .build()
 
@@ -172,7 +171,11 @@ class HapaxTransport(private val context: Context) {
             return url
         }
 
-        return null
+        // 5. Hardcoded fallback for home LAN
+        val fallback = "http://192.168.68.114:8042"
+        resolvedUrl = fallback
+        Log.i(TAG, "Using hardcoded fallback: $fallback")
+        return fallback
     }
 
     private fun getManualIp(): String? {

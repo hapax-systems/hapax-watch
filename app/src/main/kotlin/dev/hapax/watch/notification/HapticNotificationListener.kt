@@ -7,15 +7,14 @@ import android.os.VibratorManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import dev.hapax.watch.data.dataStore
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
-private val Context.dataStore by preferencesDataStore(name = "settings")
 
 /**
  * Listens for notifications from KDE Connect and triggers appropriate

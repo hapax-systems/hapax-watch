@@ -43,6 +43,11 @@ class MdnsDiscovery(context: Context) {
                         val host = si.host?.hostAddress
                         val port = si.port
                         if (host != null) {
+                            // Skip IPv6 addresses — they cause URL parsing crashes
+                            if (host.contains(':')) {
+                                Log.w(TAG, "Skipping IPv6 address: $host")
+                                return
+                            }
                             val address = "$host:$port"
                             Log.i(TAG, "Resolved hapax service: $address")
                             result.set(address)

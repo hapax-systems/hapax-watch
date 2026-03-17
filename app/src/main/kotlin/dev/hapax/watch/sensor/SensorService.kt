@@ -11,6 +11,8 @@ import android.os.BatteryManager
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.VibratorManager
 import android.util.Log
 import androidx.health.services.client.HealthServices
 import dev.hapax.watch.R
@@ -33,14 +35,21 @@ class SensorService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val collectors = mutableListOf<SensorCollector>()
 
+    private var previousStatus: HapaxTransport.Status? = null
+
     private val flushRunnable = object : Runnable {
         override fun run() {
             if (connectivityHelper.isNetworkAvailable) {
                 Thread {
                     transport.flush(buffer)
+                    publishStatus()
+                    updateNotification()
+                    checkStatusChange()
                 }.start()
             } else {
                 Log.d(TAG, "Skipping flush — no network")
+                publishStatus()
+                updateNotification()
             }
             handler.postDelayed(this, FLUSH_INTERVAL_MS)
         }
@@ -56,12 +65,7 @@ class SensorService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         createNotificationChannel()
-        val notification = Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle("Hapax Watch Active")
-            .setContentText("Streaming sensor data")
-            .setSmallIcon(R.drawable.ic_notification)
-            .setOngoing(true)
-            .build()
+        val notification = buildNotification("Starting up...")
 
         startForeground(NOTIFICATION_ID, notification)
 
@@ -79,6 +83,7 @@ class SensorService : Service() {
         // Discover and start available sensor collectors
         serviceScope.launch {
             startCollectors()
+            publishStatus()
         }
 
         handler.postDelayed(flushRunnable, FLUSH_INTERVAL_MS)
@@ -111,7 +116,7 @@ class SensorService : Service() {
         val passiveClient = healthClient.passiveMonitoringClient
 
         val candidates: List<SensorCollector> = listOf(
-            HeartRateCollector(measureClient),
+            HeartRateCollector(measureClient, this@SensorService),
             HrvCollector(measureClient),
             SkinTempCollector(passiveClient),
             ActivityCollector(passiveClient),
@@ -157,6 +162,90 @@ class SensorService : Service() {
         }
     }
 
+    /** Write current service status to SharedPreferences for SettingsActivity to read. */
+    private fun publishStatus() {
+        val prefs = getSharedPreferences(STATUS_PREFS, Context.MODE_PRIVATE)
+        val lastHr = getLastHeartRate()
+        prefs.edit()
+            .putString("connection_status", transport.status.name.lowercase())
+            .putString("server_url", transport.resolvedUrl ?: "")
+            .putLong("last_flush_time", System.currentTimeMillis())
+            .putInt("buffer_size", buffer.size)
+            .putString("active_sensors", collectors.joinToString(",") { it.type })
+            .putFloat("last_hr", lastHr)
+            .apply()
+    }
+
+    /** Extract latest heart rate from the buffer (peek, don't drain). */
+    private fun getLastHeartRate(): Float {
+        // We read from shared prefs as a running value; updated from HeartRateCollector via buffer
+        // For now, return 0 if no HR readings exist
+        val prefs = getSharedPreferences(STATUS_PREFS, Context.MODE_PRIVATE)
+        return prefs.getFloat("last_hr", 0f)
+    }
+
+    /** Update the foreground notification with current status. */
+    private fun updateNotification() {
+        val text = when (transport.status) {
+            HapaxTransport.Status.CONNECTED -> {
+                val prefs = getSharedPreferences(STATUS_PREFS, Context.MODE_PRIVATE)
+                val hr = prefs.getFloat("last_hr", 0f)
+                if (hr > 0) "\u2665 ${hr.toInt()} bpm \u00b7 Connected"
+                else "Connected"
+            }
+            HapaxTransport.Status.BUFFERING -> {
+                "Buffering (${buffer.size} readings)"
+            }
+            HapaxTransport.Status.DISCONNECTED -> {
+                "Disconnected"
+            }
+        }
+        val notification = buildNotification(text)
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.notify(NOTIFICATION_ID, notification)
+    }
+
+    /** Check if status changed and vibrate accordingly. */
+    private fun checkStatusChange() {
+        val currentStatus = transport.status
+        val prev = previousStatus
+        if (prev != null && prev != currentStatus) {
+            when (currentStatus) {
+                HapaxTransport.Status.CONNECTED -> vibrateConnected()
+                HapaxTransport.Status.DISCONNECTED -> vibrateDisconnected()
+                HapaxTransport.Status.BUFFERING -> {} // no haptic for buffering
+            }
+        }
+        previousStatus = currentStatus
+    }
+
+    private fun getVibrator(): android.os.Vibrator? {
+        val manager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+        return manager?.defaultVibrator
+    }
+
+    private fun vibrateConnected() {
+        val vibrator = getVibrator() ?: return
+        vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+    }
+
+    private fun vibrateDisconnected() {
+        val vibrator = getVibrator() ?: return
+        // Two short taps: 50ms on, 100ms gap, 50ms on
+        val timings = longArrayOf(0, 50, 100, 50)
+        val amplitudes = intArrayOf(0, VibrationEffect.DEFAULT_AMPLITUDE, 0, VibrationEffect.DEFAULT_AMPLITUDE)
+        vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+    }
+
+    private fun buildNotification(text: String): Notification {
+        return Notification.Builder(this, CHANNEL_ID)
+            .setContentTitle("Hapax Watch Active")
+            .setContentText(text)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setOngoing(true)
+            .build()
+    }
+
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
@@ -172,5 +261,6 @@ class SensorService : Service() {
         private const val CHANNEL_ID = "hapax_watch_service"
         private const val NOTIFICATION_ID = 1
         private const val FLUSH_INTERVAL_MS = 30_000L
+        const val STATUS_PREFS = "hapax_service_status"
     }
 }

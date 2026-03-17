@@ -1,5 +1,6 @@
 package dev.hapax.watch.sensor
 
+import android.content.Context
 import android.util.Log
 import androidx.health.services.client.HealthServicesClient
 import androidx.health.services.client.MeasureCallback
@@ -13,7 +14,10 @@ import dev.hapax.watch.data.SensorBuffer
 import dev.hapax.watch.data.SensorReading
 import kotlinx.coroutines.guava.await
 
-class HeartRateCollector(private val measureClient: MeasureClient) : SensorCollector {
+class HeartRateCollector(
+    private val measureClient: MeasureClient,
+    private val context: Context? = null,
+) : SensorCollector {
 
     override val type = "heart_rate"
 
@@ -41,6 +45,9 @@ class HeartRateCollector(private val measureClient: MeasureClient) : SensorColle
                     confidence = accuracy,
                 )
                 buf.add(reading)
+                // Publish latest HR for notification display
+                context?.getSharedPreferences(SensorService.STATUS_PREFS, Context.MODE_PRIVATE)
+                    ?.edit()?.putFloat("last_hr", bpm.toFloat())?.apply()
                 Log.d(TAG, "HR: $bpm bpm ($accuracy)")
             }
         }
