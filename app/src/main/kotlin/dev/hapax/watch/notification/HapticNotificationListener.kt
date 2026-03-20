@@ -18,8 +18,17 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Listens for notifications from KDE Connect and triggers appropriate
- * haptic patterns. For presence-check notifications, starts listening
- * for a wrist-raise gesture to respond with a voice trigger.
+ * haptic patterns. Supports both operational patterns (presence, urgent,
+ * briefing, voice) and Stimmung patterns that encode system state into
+ * nuanced vibrations.
+ *
+ * Stimmung keywords sent by the workstation:
+ *   "hapax stimmung calm"     → gentle tap (nominal)
+ *   "hapax stimmung cautious" → double tap (working harder)
+ *   "hapax stimmung degraded" → accelerating triple tap (stressed)
+ *   "hapax stimmung flow"     → silence (flow state, zero interruption)
+ *   "hapax stress ack"        → long low buzz (stress acknowledgment)
+ *   "hapax transition"        → rising sweep (activity transition)
  */
 class HapticNotificationListener : NotificationListenerService() {
 
@@ -47,14 +56,48 @@ class HapticNotificationListener : NotificationListenerService() {
         val extras = sbn.notification?.extras ?: return
         val title = extras.getString("android.title") ?: ""
         val text = extras.getCharSequence("android.text")?.toString() ?: ""
+        val combined = "$title $text".lowercase()
 
         Log.d(TAG, "KDE Connect notification: title='$title' text='$text'")
 
+        if (!combined.contains("hapax")) {
+            Log.d(TAG, "Not a hapax notification — ignoring")
+            return
+        }
+
         when {
-            isPresenceCheck(title, text) -> handlePresenceCheck()
-            isUrgent(title, text) -> vibrate(HapticPatterns.URGENT)
-            isBriefing(title, text) -> vibrate(HapticPatterns.BRIEFING)
-            isVoiceReady(title, text) -> vibrate(HapticPatterns.VOICE_READY)
+            // ── Stimmung patterns (check before operational to avoid overlap) ──
+            combined.contains("stimmung calm") -> {
+                Log.i(TAG, "Stimmung: calm")
+                vibrateWithAmplitude(HapticPatterns.STIMMUNG_CALM, HapticPatterns.STIMMUNG_CALM_AMPLITUDES)
+            }
+            combined.contains("stimmung cautious") -> {
+                Log.i(TAG, "Stimmung: cautious")
+                vibrateWithAmplitude(HapticPatterns.STIMMUNG_CAUTIOUS, HapticPatterns.STIMMUNG_CAUTIOUS_AMPLITUDES)
+            }
+            combined.contains("stimmung degraded") -> {
+                Log.i(TAG, "Stimmung: degraded")
+                vibrateWithAmplitude(HapticPatterns.STIMMUNG_DEGRADED, HapticPatterns.STIMMUNG_DEGRADED_AMPLITUDES)
+            }
+            combined.contains("stimmung flow") -> {
+                // Silence IS the signal — do not vibrate
+                Log.i(TAG, "Stimmung: flow — suppressing haptics")
+            }
+            combined.contains("stress ack") -> {
+                Log.i(TAG, "Stress acknowledgment")
+                vibrateWithAmplitude(HapticPatterns.STRESS_ACK, HapticPatterns.STRESS_ACK_AMPLITUDES)
+            }
+            combined.contains("transition") && !combined.contains("presence") -> {
+                Log.i(TAG, "Activity transition")
+                vibrateWithAmplitude(HapticPatterns.TRANSITION, HapticPatterns.TRANSITION_AMPLITUDES)
+            }
+
+            // ── Operational patterns ──
+            combined.contains("presence") -> handlePresenceCheck()
+            combined.contains("urgent") -> vibrate(HapticPatterns.URGENT)
+            combined.contains("briefing") -> vibrate(HapticPatterns.BRIEFING)
+            combined.contains("voice") -> vibrate(HapticPatterns.VOICE_READY)
+
             else -> Log.d(TAG, "Unrecognized hapax notification — ignoring")
         }
     }
@@ -76,8 +119,15 @@ class HapticNotificationListener : NotificationListenerService() {
         }
     }
 
+    /** Vibrate with a simple timing pattern (default amplitude). */
     private fun vibrate(pattern: LongArray) {
         val effect = VibrationEffect.createWaveform(pattern, -1)
+        vibrator.vibrate(effect)
+    }
+
+    /** Vibrate with amplitude-modulated pattern for nuanced Stimmung feedback. */
+    private fun vibrateWithAmplitude(timings: LongArray, amplitudes: IntArray) {
+        val effect = VibrationEffect.createWaveform(timings, amplitudes, -1)
         vibrator.vibrate(effect)
     }
 
@@ -105,25 +155,5 @@ class HapticNotificationListener : NotificationListenerService() {
     companion object {
         private const val TAG = "HapticNotifListener"
         private const val KDE_CONNECT_PACKAGE = "org.kde.kdeconnect_tp"
-
-        private fun isPresenceCheck(title: String, text: String): Boolean {
-            val combined = "$title $text".lowercase()
-            return combined.contains("hapax") && combined.contains("presence")
-        }
-
-        private fun isUrgent(title: String, text: String): Boolean {
-            val combined = "$title $text".lowercase()
-            return combined.contains("hapax") && combined.contains("urgent")
-        }
-
-        private fun isBriefing(title: String, text: String): Boolean {
-            val combined = "$title $text".lowercase()
-            return combined.contains("hapax") && combined.contains("briefing")
-        }
-
-        private fun isVoiceReady(title: String, text: String): Boolean {
-            val combined = "$title $text".lowercase()
-            return combined.contains("hapax") && combined.contains("voice")
-        }
     }
 }
