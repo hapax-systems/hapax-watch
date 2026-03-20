@@ -17,6 +17,7 @@ import android.util.Log
 import androidx.health.services.client.HealthServices
 import dev.hapax.watch.R
 import dev.hapax.watch.data.SensorBuffer
+import dev.hapax.watch.gesture.GestureDetector
 import dev.hapax.watch.network.ConnectivityHelper
 import dev.hapax.watch.network.HapaxTransport
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,7 @@ class SensorService : Service() {
     private lateinit var transport: HapaxTransport
     private lateinit var handler: Handler
     private lateinit var connectivityHelper: ConnectivityHelper
+    private var gestureDetector: GestureDetector? = null
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val collectors = mutableListOf<SensorCollector>()
@@ -84,6 +86,15 @@ class SensorService : Service() {
         serviceScope.launch {
             startCollectors()
             publishStatus()
+
+            // Start gesture detector once transport has a resolved URL
+            val url = transport.resolvedUrl
+            if (url != null) {
+                gestureDetector = GestureDetector(this@SensorService, url).also { it.start() }
+                Log.i(TAG, "GestureDetector started (url=$url)")
+            } else {
+                Log.w(TAG, "No server URL — gesture detector deferred")
+            }
         }
 
         handler.postDelayed(flushRunnable, FLUSH_INTERVAL_MS)
@@ -94,6 +105,8 @@ class SensorService : Service() {
 
     override fun onDestroy() {
         handler.removeCallbacks(flushRunnable)
+        gestureDetector?.stop()
+        gestureDetector = null
         for (collector in collectors) {
             try {
                 collector.stop()
