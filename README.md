@@ -50,9 +50,7 @@ SensorPayload JSON matches `watch_receiver.py` on the council side. Readings arr
 
 ## Part of the Hapax Research Project
 
-This Wear OS app is a **research instrument** for a project **operationalizing Clark & Brennan's (1991) conversational grounding theory in a production voice AI**. Biometric sensor data (heart rate, HRV, skin temperature) feeds into the council's Bayesian presence engine and phenomenal context renderer, providing physiological grounding signals for the SCED experiment.
-
-See [hapax-council](https://github.com/ryanklee/hapax-council) for the full research context.
+Research instrument for a project implementing Clark & Brennan's (1991) conversational grounding theory in a voice AI system. Biometric sensor data (heart rate, HRV, skin temperature) is consumed by the council perception pipeline. See [hapax-council](https://github.com/ryanklee/hapax-council) for the research context.
 
 | Repository | Role |
 |-----------|------|
