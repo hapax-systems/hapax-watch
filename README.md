@@ -48,10 +48,19 @@ SensorPayload JSON matches `watch_receiver.py` on the council side. Readings arr
 4. Status tile, haptic notifications, voice trigger — done
 5. Complications, watch face integration
 
-## Related
+## Part of the Hapax Research Project
 
-- [hapax-council](https://github.com/ryanklee/hapax-council) — Council cockpit API (`:8051`), `watch_receiver.py` agent
-- [hapax-constitution](https://github.com/ryanklee/hapax-constitution) — Governance architecture
+This Wear OS app is a **research instrument** for a project **operationalizing Clark & Brennan's (1991) conversational grounding theory in a production voice AI**. Biometric sensor data (heart rate, HRV, skin temperature) feeds into the council's Bayesian presence engine and phenomenal context renderer, providing physiological grounding signals for the SCED experiment.
+
+See [hapax-council](https://github.com/ryanklee/hapax-council) for the full research context.
+
+| Repository | Role |
+|-----------|------|
+| [hapax-council](https://github.com/ryanklee/hapax-council) | Primary research artifact — voice daemon, grounding system, experiment infrastructure |
+| [hapax-constitution](https://github.com/ryanklee/hapax-constitution) | Governance specification — axioms, implications, canons |
+| [hapax-officium](https://github.com/ryanklee/hapax-officium) | Supporting software — management decision support |
+| **hapax-watch** (this repo) | Research instrument — Wear OS biometric companion |
+| [cockpit-mcp](https://github.com/ryanklee/cockpit-mcp) | Infrastructure — MCP server for Claude Code |
 
 ## License
 
