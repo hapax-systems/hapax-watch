@@ -17,8 +17,8 @@
 - `~/projects/hapax-council/agents/profiler.py` — Profile extraction (ProfileFact model, dimension-keyed, authority levels)
 - `~/projects/hapax-council/agents/profiler_sources.py` — Source discovery (BRIDGED_SOURCE_TYPES, SOURCE_TYPE_CHUNK_CAPS)
 - `~/projects/hapax-council/agents/briefing.py` — Daily briefing generator (consumes activity + health snapshot)
-- `~/projects/hapax-council/agents/hapax_voice/__main__.py` — Voice daemon (AudioInputStream, ContextGate, PresenceDetector, SessionManager)
-- `~/projects/hapax-council/agents/hapax_voice/context_gate.py` — VetoChain-based gate (5 layers, deny-wins)
+- `~/projects/hapax-council/agents/hapax_daimonion/__main__.py` — Voice daemon (AudioInputStream, ContextGate, PresenceDetector, SessionManager)
+- `~/projects/hapax-council/agents/hapax_daimonion/context_gate.py` — VetoChain-based gate (5 layers, deny-wins)
 - `~/projects/hapax-council/shared/config.py` — Canonical paths (HAPAX_HOME, RAG_SOURCES_DIR, HAPAX_CACHE_DIR, SYSTEMD_USER_DIR)
 - `~/projects/hapax-council/shared/dimensions.py` — DimensionDef registry (11 dimensions, `energy_and_attention` is dimension 7)
 
@@ -953,15 +953,15 @@ git commit -m "feat(watch): Hapax Tile with connection status, notification, and
 ## Task 11: Voice Daemon — Stress-Aware Context Gate Layer
 
 **Files:**
-- Modify: `~/projects/hapax-council/agents/hapax_voice/context_gate.py`
-- Create: `~/projects/hapax-council/agents/hapax_voice/watch_signals.py`
-- Test: `~/projects/hapax-council/tests/hapax_voice/test_watch_signals.py`
+- Modify: `~/projects/hapax-council/agents/hapax_daimonion/context_gate.py`
+- Create: `~/projects/hapax-council/agents/hapax_daimonion/watch_signals.py`
+- Test: `~/projects/hapax-council/tests/hapax_daimonion/test_watch_signals.py`
 
 **Context:** Adds a new veto to the ContextGate's VetoChain at position 2 (after active-session check, before PipeWire volume). Reads EDA and HRV JSON files from `~/hapax-state/watch/`. If EDA spike detected or HRV dropped >30% from 1-hour mean in last 5 minutes, suppresses non-urgent interruptions. Falls back to no-op if watch files absent or stale (>5 min).
 
 **Step 1: Write the failing tests**
 
-Create `~/projects/hapax-council/tests/hapax_voice/test_watch_signals.py`:
+Create `~/projects/hapax-council/tests/hapax_daimonion/test_watch_signals.py`:
 
 ```python
 """Tests for watch signal reading and stress detection."""
@@ -974,7 +974,7 @@ from unittest.mock import patch
 
 import pytest
 
-from agents.hapax_voice.watch_signals import (
+from agents.hapax_daimonion.watch_signals import (
     read_watch_signal,
     is_stress_elevated,
     WatchSignalReader,
@@ -1062,12 +1062,12 @@ class TestStressDetection:
 
 **Step 2: Run tests to verify they fail**
 
-Run: `cd ~/projects/hapax-council && uv run pytest tests/hapax_voice/test_watch_signals.py -v`
+Run: `cd ~/projects/hapax-council && uv run pytest tests/hapax_daimonion/test_watch_signals.py -v`
 Expected: ImportError.
 
 **Step 3: Implement watch_signals.py**
 
-Create `~/projects/hapax-council/agents/hapax_voice/watch_signals.py`:
+Create `~/projects/hapax-council/agents/hapax_daimonion/watch_signals.py`:
 
 - `WATCH_STATE_DIR = HAPAX_HOME / "hapax-state" / "watch"` (or parameterized)
 - `read_watch_signal(path, max_age_seconds=300)` -- read JSON, check mtime, return dict or None
@@ -1076,7 +1076,7 @@ Create `~/projects/hapax-council/agents/hapax_voice/watch_signals.py`:
 
 **Step 4: Wire into ContextGate**
 
-In `~/projects/hapax-council/agents/hapax_voice/context_gate.py`:
+In `~/projects/hapax-council/agents/hapax_daimonion/context_gate.py`:
 
 - Import `is_stress_elevated` from `watch_signals`
 - Add a new `Veto` to the VetoChain: `_check_stress_elevated()` that calls `is_stress_elevated()` and vetoes if True with reason "stress elevated (watch EDA/HRV)"
@@ -1085,17 +1085,17 @@ In `~/projects/hapax-council/agents/hapax_voice/context_gate.py`:
 
 **Step 5: Run tests to verify they pass**
 
-Run: `cd ~/projects/hapax-council && uv run pytest tests/hapax_voice/test_watch_signals.py -v`
+Run: `cd ~/projects/hapax-council && uv run pytest tests/hapax_daimonion/test_watch_signals.py -v`
 Expected: All PASS.
 
-Run: `cd ~/projects/hapax-council && uv run pytest tests/hapax_voice/ -v -x`
+Run: `cd ~/projects/hapax-council && uv run pytest tests/hapax_daimonion/ -v -x`
 Expected: All existing tests still pass (no regressions).
 
 **Step 6: Commit**
 
 ```bash
 cd ~/projects/hapax-council
-git add agents/hapax_voice/watch_signals.py agents/hapax_voice/context_gate.py tests/hapax_voice/test_watch_signals.py
+git add agents/hapax_daimonion/watch_signals.py agents/hapax_daimonion/context_gate.py tests/hapax_daimonion/test_watch_signals.py
 git commit -m "feat(voice): stress-aware context gate layer from watch EDA and HRV signals"
 ```
 
@@ -1104,15 +1104,15 @@ git commit -m "feat(voice): stress-aware context gate layer from watch EDA and H
 ## Task 12: Voice Daemon — Haptic Presence Verification Path
 
 **Files:**
-- Modify: `~/projects/hapax-council/agents/hapax_voice/presence.py`
-- Modify: `~/projects/hapax-council/agents/hapax_voice/watch_signals.py` (add `is_watch_connected`, `send_haptic_tap`)
-- Test: `~/projects/hapax-council/tests/hapax_voice/test_watch_signals.py` (add presence tests)
+- Modify: `~/projects/hapax-council/agents/hapax_daimonion/presence.py`
+- Modify: `~/projects/hapax-council/agents/hapax_daimonion/watch_signals.py` (add `is_watch_connected`, `send_haptic_tap`)
+- Test: `~/projects/hapax-council/tests/hapax_daimonion/test_watch_signals.py` (add presence tests)
 
 **Context:** Alternative to the audio chime for presence verification. When watch is connected, sends a haptic tap via KDE Connect, then waits 3s for a wrist-raise (watch POSTs `/watch/voice-trigger`). Falls back to audio chime if watch not connected or no response.
 
 **Step 1: Add watch presence tests**
 
-Add to `tests/hapax_voice/test_watch_signals.py`:
+Add to `tests/hapax_daimonion/test_watch_signals.py`:
 
 ```python
 class TestWatchPresence:
@@ -1154,14 +1154,14 @@ In `presence.py`:
 
 **Step 4: Run tests**
 
-Run: `cd ~/projects/hapax-council && uv run pytest tests/hapax_voice/test_watch_signals.py -v`
+Run: `cd ~/projects/hapax-council && uv run pytest tests/hapax_daimonion/test_watch_signals.py -v`
 Expected: All PASS.
 
 **Step 5: Commit**
 
 ```bash
 cd ~/projects/hapax-council
-git add agents/hapax_voice/watch_signals.py agents/hapax_voice/presence.py tests/hapax_voice/test_watch_signals.py
+git add agents/hapax_daimonion/watch_signals.py agents/hapax_daimonion/presence.py tests/hapax_daimonion/test_watch_signals.py
 git commit -m "feat(voice): haptic presence verification via watch with audio chime fallback"
 ```
 
@@ -1338,7 +1338,7 @@ In `~/projects/hapax-council/shared/dimensions.py`, add `"watch"` to the `primar
 Run: `cd ~/projects/hapax-council && uv run pytest tests/test_profiler_watch.py -v`
 Expected: All PASS.
 
-Run: `cd ~/projects/hapax-council && uv run pytest tests/ -v -x --ignore=tests/hapax_voice/test_audio_hardware.py`
+Run: `cd ~/projects/hapax-council && uv run pytest tests/ -v -x --ignore=tests/hapax_daimonion/test_audio_hardware.py`
 Expected: No regressions.
 
 **Step 6: Commit**
@@ -1374,7 +1374,7 @@ from unittest.mock import patch, AsyncMock
 
 import pytest
 
-from agents.hapax_voice.watch_signals import read_watch_signal
+from agents.hapax_daimonion.watch_signals import read_watch_signal
 
 
 class TestActivityGating:
@@ -1661,7 +1661,7 @@ Expected: Fresh JSON files, service healthy.
 cd ~/projects/hapax-council && uv run python -m agents.health_monitor --check connectivity --json | python -m json.tool | grep watch
 
 # Full test suite
-uv run pytest tests/ -v -x --ignore=tests/hapax_voice/test_audio_hardware.py
+uv run pytest tests/ -v -x --ignore=tests/hapax_daimonion/test_audio_hardware.py
 ```
 
 Expected: Watch connectivity check appears. All tests pass.
@@ -1703,7 +1703,7 @@ Expected: Health dimension facts from watch data at Observation authority.
 
 ### Critical Files for Implementation
 
-- `/home/operator/projects/hapax-council/agents/hapax_voice/context_gate.py` - Core file to modify for stress-aware gate layer (VetoChain insertion point)
+- `/home/operator/projects/hapax-council/agents/hapax_daimonion/context_gate.py` - Core file to modify for stress-aware gate layer (VetoChain insertion point)
 - `/home/operator/projects/hapax-council/agents/health_monitor.py` - Add watch connectivity check #37 following existing `check_group` decorator pattern
 - `/home/operator/projects/hapax-council/agents/ingest.py` - Wire `health-connect` path pattern into `_SERVICE_PATH_PATTERNS` for RAG auto-detection
 - `/home/operator/projects/hapax-council/agents/profiler_sources.py` - Add watch source reader (`read_watch_facts`) and register in `BRIDGED_SOURCE_TYPES`

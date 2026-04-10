@@ -171,8 +171,8 @@ class HapaxTransport(private val context: Context) {
             return url
         }
 
-        // 5. Hardcoded fallback for home LAN
-        val fallback = "http://192.168.68.114:8042"
+        // 5. Hardcoded fallback — Tailscale IP (stable across all networks)
+        val fallback = "http://100.117.1.83:8042"
         resolvedUrl = fallback
         Log.i(TAG, "Using hardcoded fallback: $fallback")
         return fallback

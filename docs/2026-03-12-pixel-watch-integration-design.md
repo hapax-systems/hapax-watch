@@ -96,7 +96,7 @@ Runs as an Android foreground service with persistent notification ("Hapax conne
 Single Wear OS Tile (ProtoLayout, Material 3 Expressive) showing:
 - Connection status (green dot = streaming, amber = buffering, red = disconnected)
 - Last system notification summary (from workstation via KDE Connect)
-- Quick action: tap to open voice session (sends HTTP trigger to hapax-voice)
+- Quick action: tap to open voice session (sends HTTP trigger to hapax-daimonion)
 
 ### Workstation Receiver: `watch-receiver`
 
@@ -105,7 +105,7 @@ Minimal FastAPI service running as a systemd user service.
 ```python
 # Endpoints
 POST /watch/sensors       # Ingest sensor batch
-POST /watch/voice-trigger # Signal hapax-voice to open wrist session
+POST /watch/voice-trigger # Signal hapax-daimonion to open wrist session
 GET  /watch/status        # Watch polls to confirm connectivity
 
 # Output: filesystem-as-bus
@@ -251,7 +251,7 @@ The `hapax-watch` app registers as a notification listener and intercepts KDE Co
 - `hapax-presence-check`: Two short taps (tap-pause-tap), 100ms each
 - `hapax-urgent`: Long buzz (500ms), pause, long buzz
 - `hapax-briefing`: Three gentle taps (50ms each)
-- `hapax-voice-ready`: Single strong tap (200ms) — voice session opened, speak now
+- `hapax-daimonion-ready`: Single strong tap (200ms) — voice session opened, speak now
 
 ---
 
@@ -302,13 +302,13 @@ These summaries become searchable in the RAG pipeline. The briefing agent can qu
 
 ## 6. On-Wrist Voice Relay (Stretch Goal)
 
-Lowest priority, highest complexity. Enables voice interaction with hapax-voice while away from the desk but on the LAN.
+Lowest priority, highest complexity. Enables voice interaction with hapax-daimonion while away from the desk but on the LAN.
 
 ### Architecture
 
 ```
 ┌──────────────┐  WebSocket audio  ┌─────────────────┐  PipeWire virtual  ┌─────────────┐
-│ Pixel Watch   │ ────────────────→│ watch-receiver   │  source injection  │ hapax-voice  │
+│ Pixel Watch   │ ────────────────→│ watch-receiver   │  source injection  │ hapax-daimonion  │
 │ mic → opus    │                  │ :8042/voice      │ ────────────────→ │ daemon       │
 │ speaker ← opus│ ←────────────────│                  │                   │              │
 └──────────────┘                   └─────────────────┘                    └─────────────┘
