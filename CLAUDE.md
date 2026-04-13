@@ -13,10 +13,11 @@ export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 
 ## Architecture
 
-- **SensorService** — Foreground service collecting sensor data via Health Services API (Sprint 1 uses fake data)
+- **SensorService** — Foreground service collecting sensor data via Health Services API
 - **SensorBuffer** — Thread-safe ring buffer (max 500 readings)
 - **HapaxTransport** — OkHttp POST with exponential backoff, sends SensorPayload JSON batches every 30s
 - **SettingsActivity** — Compose for Wear UI for server IP and service toggle
+- **HapticPatterns** — Amplitude-modulated waveforms for status tile + voice trigger feedback
 
 ## Data Schema
 
@@ -39,13 +40,9 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 Requires watch connected via ADB (USB or `adb connect <ip>:5555` over WiFi).
 
-## Sprint Roadmap
+## Sister app
 
-1. Skeleton + Transport (fake data, HTTP POST) -- done
-2. Real sensors via Health Services API -- done
-3. mDNS discovery, network resilience, DataStore persistence -- done
-4. Status tile, haptic notifications, voice trigger -- done
-5. Complications, watch face integration
+`hapax-phone` covers daily health summaries + ambient context. Watch covers continuous heart-rate streaming + on-wrist haptics. Both target the council watch receiver (port `8042`) but with different payload schemas.
 
 ## Gotchas
 
