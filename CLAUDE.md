@@ -46,7 +46,9 @@ Requires watch connected via ADB (USB or `adb connect <ip>:5555` over WiFi).
 
 ## Gotchas
 
-- **Battery percentage** not yet captured — TODO exists in `HapaxTransport.kt` (hardcoded `null`).
+- **Battery percentage** is `null` in payloads — Wear OS doesn't expose it on the watch-side battery API used here.
 - **Permissions:** Health Services API requires runtime `BODY_SENSORS` + `ACTIVITY_RECOGNITION`. Foreground service notification prevents OS kill.
 - **Wear OS background limits:** Service uses `START_STICKY` to recover from background kills. Battery optimization may still interfere.
 - **Haptic patterns** (`HapticPatterns.kt`) use amplitude-modulated waveforms — requires hardware vibrator support (most Wear OS 4+ devices).
+
+> Subject to the workspace CLAUDE.md rotation policy: `hapax-council/docs/superpowers/specs/2026-04-13-claude-md-excellence-design.md`.
