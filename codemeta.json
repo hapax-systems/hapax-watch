@@ -1,0 +1,27 @@
+{
+  "@context": "https://w3id.org/codemeta/3.0",
+  "@type": "SoftwareSourceCode",
+  "name": "hapax-watch",
+  "description": "Constituent of the Hapax operating environment. Wear OS companion that streams biometric sensor data (heart rate, HRV, skin temperature, sleep) to the council logos API. Single operator, single device.",
+  "codeRepository": "https://github.com/ryanklee/hapax-watch",
+  "url": "https://github.com/ryanklee/hapax-watch",
+  "license": "https://polyformproject.org/licenses/strict/1.0.0/",
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Ryan",
+      "familyName": "Kleeberger"
+    }
+  ],
+  "applicationCategory": "WearableApplication",
+  "developmentStatus": "active",
+  "isAccessibleForFree": true,
+  "keywords": [
+    "research-software",
+    "single-operator",
+    "infrastructure-as-argument"
+  ],
+  "relatedLink": [
+    "https://github.com/ryanklee/hapax-council"
+  ]
+}
