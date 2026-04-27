@@ -83,6 +83,20 @@
                 android:resource="@drawable/ic_notification" />
         </service>
 
+        <!-- Operator Awareness Tile (awareness-watch-tile-001 skeleton) -->
+        <service
+            android:name=".tile.OperatorAwarenessTileService"
+            android:exported="true"
+            android:label="Operator Awareness"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/ic_notification" />
+        </service>
+
         <!-- Haptic Notification Listener -->
         <service
             android:name=".notification.HapticNotificationListener"
