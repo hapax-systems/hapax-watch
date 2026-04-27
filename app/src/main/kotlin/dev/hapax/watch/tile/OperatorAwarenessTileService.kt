@@ -8,6 +8,7 @@ import androidx.wear.tiles.TileBuilders
 import androidx.wear.tiles.TileService
 import com.google.common.util.concurrent.ListenableFuture
 import dev.hapax.watch.network.LogosApiClient
+import dev.hapax.watch.data.WatchSummary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,36 +44,66 @@ class OperatorAwarenessTileService : TileService() {
         requestParams: RequestBuilders.TileRequest,
     ): ListenableFuture<TileBuilders.Tile> = serviceScope.future {
         val summary = withContext(Dispatchers.IO) { apiClient.fetchWatchSummary() }
+        buildTile(summary)
+    }
 
-        val text = if (summary == null) {
-            "?"
-        } else {
-            // Placeholder until -002 lands the 3-glyph layout. The stance
-            // string is the most informative single field for skeleton
-            // verification on-device.
-            summary.stance
-        }
-
-        val root = LayoutElementBuilders.Text.Builder()
-            .setText(text)
-            .build()
-
-        val layout = LayoutElementBuilders.Layout.Builder()
-            .setRoot(root)
-            .build()
-
-        val entry = TimelineBuilders.TimelineEntry.Builder()
-            .setLayout(layout)
-            .build()
-
-        val timeline = TimelineBuilders.Timeline.Builder()
-            .addTimelineEntry(entry)
-            .build()
-
-        TileBuilders.Tile.Builder()
+    private fun buildTile(summary: WatchSummary?): TileBuilders.Tile {
+        val timeline = buildTimeline(summary)
+        return TileBuilders.Tile.Builder()
             .setResourcesVersion(RESOURCES_VERSION)
             .setFreshnessIntervalMillis(REFRESH_INTERVAL_MS)
             .setTileTimeline(timeline)
+            .build()
+    }
+
+    internal fun buildTimeline(summary: WatchSummary?): TimelineBuilders.Timeline {
+        val textStance = summary?.stance ?: "?"
+        val isLive = summary?.live ?: false
+        val isStale = summary?.stale ?: true
+        val presenceDecile = summary?.presence_decile?.toString() ?: "-"
+
+        val stanceElement = LayoutElementBuilders.Text.Builder()
+            .setText(textStance)
+            .build()
+            
+        val presenceElement = LayoutElementBuilders.Text.Builder()
+            .setText(presenceDecile)
+            .build()
+            
+        val voiceDot = LayoutElementBuilders.Text.Builder()
+            .setText(if (isLive) "●" else "○")
+            .build()
+
+        val row = LayoutElementBuilders.Row.Builder()
+            .addContent(stanceElement)
+            .addContent(presenceElement)
+            .addContent(voiceDot)
+            .build()
+
+        val rootBuilder = LayoutElementBuilders.Layout.Builder().setRoot(row)
+
+        if (isStale) {
+            val modifiers = androidx.wear.protolayout.ModifiersBuilders.Modifiers.Builder()
+                .setOpacity(androidx.wear.protolayout.TypeBuilders.FloatProp.Builder().setValue(0.5f).build())
+                .build()
+            
+            // Re-wrap the row with the modifier
+            val wrappedRow = LayoutElementBuilders.Row.Builder()
+                .addContent(stanceElement)
+                .addContent(presenceElement)
+                .addContent(voiceDot)
+                .setModifiers(modifiers)
+                .build()
+            
+            rootBuilder.setRoot(wrappedRow)
+        }
+
+        val entry = TimelineBuilders.TimelineEntry.Builder()
+            .setLayout(rootBuilder.build())
+            .build()
+
+        return TimelineBuilders.Timeline.Builder()
+            .addTimelineEntry(entry)
             .build()
     }
 

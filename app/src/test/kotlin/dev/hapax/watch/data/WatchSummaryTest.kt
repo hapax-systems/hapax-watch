@@ -15,36 +15,38 @@ class WatchSummaryTest {
     @Test
     fun `parses live healthy payload`() {
         val body = """
-            {"stance":"speaking","live":true,"stale":false,"timestamp":"2026-04-27T01:00:00Z"}
+            {"stance":"speaking","live":true,"stale":false,"presence_decile":7,"timestamp":"2026-04-27T01:00:00Z"}
         """.trimIndent()
         val summary = json.decodeFromString(WatchSummary.serializer(), body)
         assertEquals("speaking", summary.stance)
         assertTrue(summary.live)
         assertFalse(summary.stale)
+        assertEquals(7, summary.presence_decile)
         assertEquals("2026-04-27T01:00:00Z", summary.timestamp)
     }
 
     @Test
-    fun `parses 503 stale payload (no timestamp)`() {
+    fun `parses 503 stale payload (no timestamp or decile)`() {
         // Mirrors the council 503 fallback in awareness.py:179-183.
         val body = """{"stance":"unknown","live":false,"stale":true}"""
         val summary = json.decodeFromString(WatchSummary.serializer(), body)
         assertEquals("unknown", summary.stance)
         assertFalse(summary.live)
         assertTrue(summary.stale)
+        assertNull(summary.presence_decile)
         assertNull(summary.timestamp)
     }
 
     @Test
     fun `ignores unknown fields when configured to`() {
         // Keeps the data class forward-compatible with future council
-        // additions (e.g. presence_decile, voice_active) without
-        // requiring a watch-app rebuild.
+        // additions (e.g. voice_active) without requiring a watch-app rebuild.
         val body = """
             {"stance":"silent","live":false,"stale":false,"presence_decile":7,"voice_active":false}
         """.trimIndent()
         val summary = json.decodeFromString(WatchSummary.serializer(), body)
         assertEquals("silent", summary.stance)
+        assertEquals(7, summary.presence_decile)
     }
 
     @Test
