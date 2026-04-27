@@ -52,4 +52,39 @@ class OperatorAwarenessTileServiceTest {
         
         assertNull(row.modifiers?.clickable)
     }
+
+    @Test
+    fun `buildTimeline(staleSummary) produces expected dim layout`() {
+        val service = OperatorAwarenessTileService()
+        val staleSummary = WatchSummary(
+            stance = "unknown",
+            live = false,
+            stale = true,
+            presence_decile = null,
+            timestamp = null
+        )
+        val timeline = service.buildTimeline(staleSummary)
+        val rootLayout = timeline.timelineEntries[0].layout?.root as LayoutElementBuilders.Row
+        
+        // Since stale = true, it should wrap the row with opacity 0.5f modifier
+        assertNotNull(rootLayout.modifiers?.opacity)
+        assertEquals(0.5f, rootLayout.modifiers!!.opacity!!.value)
+    }
+
+    @Test
+    fun `buildTimeline(freshSummary) produces expected full-opacity layout`() {
+        val service = OperatorAwarenessTileService()
+        val freshSummary = WatchSummary(
+            stance = "speaking",
+            live = true,
+            stale = false,
+            presence_decile = 8,
+            timestamp = "2026-04-27T01:00:00Z"
+        )
+        val timeline = service.buildTimeline(freshSummary)
+        val rootLayout = timeline.timelineEntries[0].layout?.root as LayoutElementBuilders.Row
+        
+        // Since stale = false, no opacity modifier is added
+        assertNull(rootLayout.modifiers?.opacity)
+    }
 }
