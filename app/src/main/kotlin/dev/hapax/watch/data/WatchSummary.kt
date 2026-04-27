@@ -20,5 +20,6 @@ data class WatchSummary(
     val stance: String,
     val live: Boolean,
     val stale: Boolean,
+    val presence_decile: Int? = null,
     val timestamp: String? = null,
 )

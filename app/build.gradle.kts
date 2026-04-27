@@ -26,9 +26,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    kotlinOptions {
-        jvmTarget = "21"
-    }
 }
 
 dependencies {
@@ -63,6 +60,13 @@ dependencies {
 
     // Test
     testImplementation(libs.junit.jupiter)
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.core:core-ktx:1.15.0")
+        force("androidx.core:core:1.15.0")
+    }
 }
 
 tasks.withType<Test> {
