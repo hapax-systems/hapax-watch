@@ -84,7 +84,7 @@ class OperatorAwarenessTileService : TileService() {
 
         if (isStale) {
             val modifiers = androidx.wear.protolayout.ModifiersBuilders.Modifiers.Builder()
-                .setOpacity(androidx.wear.protolayout.TypeBuilders.FloatProp.Builder().setValue(0.5f).build())
+                .setOpacity(androidx.wear.protolayout.TypeBuilders.FloatProp.Builder(0.5f).build())
                 .build()
             
             // Re-wrap the row with the modifier
