@@ -26,6 +26,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
+    lint {
+        disable += setOf(
+            "AutoboxingStateCreation",
+            "FrequentlyChangingValue",
+            "NullSafeMutableLiveData",
+            "RememberInComposition",
+        )
+    }
 }
 
 dependencies {

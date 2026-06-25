@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  review_details: false
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "[skip review]"
+    ignore_usernames:
+      - "dependabot[bot]"
+      - "renovate[bot]"
+  path_filters:
+    - "!**/.gradle/**"
+    - "!**/build/**"
+    - "!**/.idea/**"
+    - "!**/*.apk"
+    - "!**/*.aab"
+  path_instructions:
+    - path: ".github/workflows/**"
+      instructions: |
+        Keep Codecov, Semgrep, CodeRabbit, Claude, and Codex checks advisory unless a governed Hapax task explicitly promotes a stable aggregate check to branch protection.
+    - path: "**/*.kt"
+      instructions: |
+        Review Android and Kotlin changes for lifecycle safety, least-privilege permissions, background execution limits, and clear test coverage for health/watch telemetry behavior.
+
+chat:
+  auto_reply: true
