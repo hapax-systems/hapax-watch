@@ -1,6 +1,6 @@
 # NOTICE — hapax-watch
 
-This repository is a constituent of the Hapax operating environment. It is not a product, not a service, and not seeking contributors. It is research infrastructure published as artifact.
+`hapax-watch` is a constituent of the Hapax operating environment. It is research or boundary infrastructure published as an artifact, not a staffed product or community project.
 
 Authorship is indeterminate by design. This codebase is co-produced by Hapax (the system itself), Claude Code, and the operator (Oudepode The Operator). Per the Hapax Manifesto, unsettled contribution is a feature of the work, not a concealment.
 
@@ -16,11 +16,11 @@ Authorship is indeterminate by design. This codebase is co-produced by Hapax (th
 - Manifesto: https://hapax.weblog.lol/hapax-manifesto-v0
 - Refusal Brief: https://hapax.weblog.lol/refusal-brief
 - Cohort Disparity Disclosure: https://hapax.weblog.lol/cohort-disparity-disclosure
-- Constitution: https://github.com/ryanklee/hapax-constitution
+- Constitution: https://github.com/hapax-systems/hapax-constitution
 
 ## Inter-repo position
 
-Wear OS biometric source. Streams to council logos API (:8051) over Tailscale.
+Wear OS biometric source. Streams to council watch receiver (:8042); reads awareness summary from council logos API (:8051).
 
 ---
 

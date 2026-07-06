@@ -4,10 +4,10 @@ Governance for this repository is centralised at `hapax-constitution`. There is 
 
 ## Authoritative sources
 
-- Axiom registry: https://github.com/ryanklee/hapax-constitution/blob/main/axioms/registry.yaml
-- Implications: https://github.com/ryanklee/hapax-constitution/tree/main/axioms/implications/
-- Precedents: https://github.com/ryanklee/hapax-constitution/tree/main/axioms/precedents/
-- Axiom registry as Wiki: https://github.com/ryanklee/hapax-constitution/wiki
+- Axiom registry: https://github.com/hapax-systems/hapax-constitution/blob/main/axioms/registry.yaml
+- Implications: https://github.com/hapax-systems/hapax-constitution/tree/main/axioms/implications/
+- Precedents: https://github.com/hapax-systems/hapax-constitution/tree/main/axioms/precedents/
+- Axiom registry as Wiki: https://github.com/hapax-systems/hapax-constitution/wiki
 
 ## Operator
 
@@ -15,7 +15,7 @@ Oudepode The Operator. Single operator, single workstation; governance applies u
 
 ## Inter-repo position
 
-Wear OS biometric source. Streams to council logos API (:8051) over Tailscale.
+Wear OS biometric source. Streams to council watch receiver (:8042); reads awareness summary from council logos API (:8051).
 
 ---
 

@@ -1,6 +1,6 @@
 # hapax-watch
 
-Wear OS companion app for the hapax ecosystem. Streams biometric sensor data (heart rate, HRV, skin temperature, sleep state) to the council/officium cockpit.
+Wear OS companion app for the Hapax ecosystem. Streams biometric sensor data (heart rate, HRV, skin temperature, activity state) to the council watch receiver and reads awareness summary state from the council logos API.
 
 ## Build
 
@@ -21,7 +21,7 @@ export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 
 ## Data Schema
 
-SensorPayload JSON matches `watch_receiver.py` on the council side. Readings array with typed entries (heart_rate, hrv, skin_temp, sleep).
+SensorPayload JSON matches `watch_receiver.py` on the council side. Readings array with typed entries (heart_rate, hrv, skin_temp, activity). There is no sleep collector in the current app.
 
 ## Network
 
