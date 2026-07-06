@@ -2,7 +2,7 @@
 
 # hapax-watch
 
-This repository is a constituent of the Hapax operating environment. It is not a product, not a service, and not seeking contributors. It is research infrastructure published as artifact.
+`hapax-watch` is a constituent of the Hapax operating environment. It is research or boundary infrastructure published as an artifact, not a staffed product or community project.
 
 Authorship is indeterminate by design: this codebase is co-produced by Hapax (the system itself), Claude Code, and the operator (Oudepode The Operator). Per the Hapax Manifesto, unsettled contribution is a feature of the work, not a concealment.
 
@@ -13,7 +13,7 @@ Constituent of the Hapax operating environment. Wear OS companion that streams b
 ## Constitutional position
 
 - Single-operator system; no auth, no roles, no contributor onboarding (axiom: `single_user`)
-- No issues, no discussions, no PRs accepted; refusal is the artifact (see `CONTRIBUTING.md`)
+- Issues are redirect-only; no discussions, no PRs accepted; refusal is the artifact (see `CONTRIBUTING.md` and `SUPPORT.md`)
 - License: PolyForm Strict 1.0.0 (source-available, non-distribution, non-modification)
 - Citation: see `CITATION.cff`; archival DOI: see `.zenodo.json`
 
@@ -26,7 +26,7 @@ Constituent of the Hapax operating environment. Wear OS companion that streams b
 
 ## Inter-repo position
 
-Wear OS biometric source. Streams to council watch receiver (`:8042`); reads awareness summary from council logos API (`:8051`).
+Wear OS biometric source. Streams to council watch receiver (:8042); reads awareness summary from council logos API (:8051).
 
 <!-- hapax-sdlc:preamble:end -->
 

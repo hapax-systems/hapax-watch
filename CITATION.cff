@@ -3,8 +3,9 @@ message: If you use this software in your research, please cite it as below.
 type: software
 title: hapax-watch
 abstract: Constituent of the Hapax operating environment. Wear OS companion that streams
-  biometric sensor data (heart rate, HRV, skin temperature, sleep) to the council
-  logos API. Single operator, single device.
+  biometric sensor data (heart rate, HRV, skin temperature, activity state) to the
+  council watch receiver and reads an awareness summary from the council logos API.
+  Single operator, single device.
 authors:
 - given-names: Ryan
   family-names: Kleeberger
