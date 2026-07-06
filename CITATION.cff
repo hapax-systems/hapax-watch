@@ -8,8 +8,8 @@ abstract: Constituent of the Hapax operating environment. Wear OS companion that
 authors:
 - given-names: Ryan
   family-names: Kleeberger
-repository-code: https://github.com/ryanklee/hapax-watch
-url: https://github.com/ryanklee/hapax-watch
+repository-code: https://github.com/hapax-systems/hapax-watch
+url: https://github.com/hapax-systems/hapax-watch
 license: PolyForm-Strict-1.0.0
 keywords:
 - research-software

@@ -16,7 +16,7 @@
   ],
   "related_identifiers": [
     {
-      "identifier": "https://github.com/ryanklee/hapax-council",
+      "identifier": "https://github.com/hapax-systems/hapax-council",
       "relation": "isRequiredBy",
       "scheme": "url"
     }
