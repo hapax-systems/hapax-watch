@@ -8,6 +8,10 @@
 
 Wear OS biometric/context bridge for the Hapax environment, useful for auditing device integration and privacy boundaries.
 
+## Reader value
+
+Makes biometric and context ingestion inspectable as a bounded, privacy-scoped signal path rather than a consumer health claim.
+
 ## Claim ceiling
 
 Internal single-device companion; not a consumer health product and not a health-efficacy claim.
@@ -33,7 +37,9 @@ Private single-device bridge for context ingestion and local awareness display. 
 
 ## Description
 
-Wear OS app for Pixel Watch 4. Single Gradle module (no mobile/wear split). Two responsibilities:
+Wear OS app for Pixel Watch 4. Single Gradle module (no mobile/wear split).
+Two responsibilities, both bounded to single-operator estate awareness rather
+than health advice:
 
 1. **Sensor streaming** — Health Services API collectors batch readings and POST to the council watch receiver every 30 s.
 2. **Awareness tile** — A Wear OS Tile reads `GET /api/awareness/watch-summary` from the council logos API every 60 s and renders a glance-only three-field summary.
@@ -42,12 +48,12 @@ Sister to [hapax-phone](https://github.com/hapax-systems/hapax-phone). Watch cov
 
 ## Sensor coverage
 
-| Collector | Source | Payload field |
-|-----------|--------|---------------|
-| `HeartRateCollector` | Health Services `MeasureClient`, active polling | `heart_rate` (`bpm`, `confidence`) |
-| `HrvCollector` | Health Services `DeltaDataType("HeartRateVariability")` | `hrv` (`rmssd_ms`) |
-| `SkinTempCollector` | Health Services `PassiveMonitoringClient` | `skin_temp` (`temp_c`) |
-| `ActivityCollector` | Health Services `PassiveMonitoringClient` user activity | `activity` (`state`: `RUNNING`/`WALKING`/`STILL`) |
+| Collector | Source | Payload field | Reader value |
+|-----------|--------|---------------|---|
+| `HeartRateCollector` | Health Services `MeasureClient`, active polling | `heart_rate` (`bpm`, `confidence`) | Shows the live biometric signal and confidence field that the estate can inspect. |
+| `HrvCollector` | Health Services `DeltaDataType("HeartRateVariability")` | `hrv` (`rmssd_ms`) | Makes the variability input visible without turning it into a health-efficacy claim. |
+| `SkinTempCollector` | Health Services `PassiveMonitoringClient` | `skin_temp` (`temp_c`) | Documents a bounded context signal and its source. |
+| `ActivityCollector` | Health Services `PassiveMonitoringClient` user activity | `activity` (`state`: `RUNNING`/`WALKING`/`STILL`) | Lets auditors see which activity labels can enter the estate. |
 
 `SensorBuffer` is a thread-safe ring buffer (max 500 readings). On transport failure, drained readings are returned to the buffer.
 
@@ -57,11 +63,11 @@ There is no sleep collector. Sleep was a Phase-2 design item (per `docs/2026-03-
 
 `TileService` polling `GET /api/awareness/watch-summary` every 60 s. Renders three fields:
 
-| Position | Field | Source |
-|----------|-------|--------|
-| 1 | Stance | `WatchSummary.stance` (e.g. `SEEKING`, `THINKING`, `GROUNDED`) |
-| 2 | Presence decile | `WatchSummary.presence_decile` (0–10, nullable) |
-| 3 | Voice indicator | `WatchSummary.live` (filled = live, hollow = not) |
+| Position | Field | Source | Reader value |
+|----------|-------|--------|---|
+| 1 | Stance | `WatchSummary.stance` (e.g. `SEEKING`, `THINKING`, `GROUNDED`) | Gives the operator a glanceable estate state without an action surface. |
+| 2 | Presence decile | `WatchSummary.presence_decile` (0-10, nullable) | Carries a compact context indicator while preserving nullability. |
+| 3 | Voice indicator | `WatchSummary.live` (filled = live, hollow = not) | Shows liveness without exposing a microphone, camera, or control affordance. |
 
 The tile is glance-only: no clickable affordance, no action button. When the response carries `X-Awareness-State-Stale: true` or returns HTTP 503, the tile renders the last known values at 50 % opacity.
 
@@ -128,10 +134,10 @@ No instrumented or screenshot tests yet.
 
 ## Counterpart routes on hapax-council
 
-| Endpoint | Implementation | Purpose |
-|----------|---------------|---------|
-| Sensor batch routes (port 8042) | `agents/watch_receiver.py` | Sensor ingest; persists per-device JSON to `~/hapax-state/watch/` |
-| `GET /api/awareness/watch-summary` (port 8051) | `logos/api/routes/awareness.py` | Compact tile-friendly summary; 503 + `X-Awareness-State-Stale: true` when stale |
+| Endpoint | Implementation | Purpose | Reader value |
+|----------|---------------|---------|---|
+| Sensor batch routes (port 8042) | `agents/watch_receiver.py` | Sensor ingest; persists per-device JSON to `~/hapax-state/watch/` | Identifies the receiver boundary for audit and failure tracing. |
+| `GET /api/awareness/watch-summary` (port 8051) | `logos/api/routes/awareness.py` | Compact tile-friendly summary; 503 + `X-Awareness-State-Stale: true` when stale | Shows how the tile degrades when estate state is stale. |
 
 ## Known limitations
 
