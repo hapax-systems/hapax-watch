@@ -15,7 +15,7 @@ Oudepode The Operator. Single operator, single workstation; governance applies u
 
 ## Inter-repo position
 
-Wear OS biometric source. Streams to council watch receiver (:8042); reads awareness summary from council logos API (:8051).
+Private single-device bridge for context ingestion and local awareness display. It is not a consumer health product.
 
 ---
 
