@@ -2,7 +2,7 @@
 
 `hapax-watch` is internal apparatus in the Hapax Systems portfolio. It is not a public product, hosted service, or community project unless a separate product boundary is ratified.
 
-This repository is part of the Hapax Systems portfolio. Public metadata, issue affordances, and support boundaries are governed by the registry in `hapax-constitution`.
+This repository is part of the Hapax Systems portfolio. Public metadata, issue affordances, and support boundaries follow the registry in `hapax-constitution`.
 
 ## Reader promise
 

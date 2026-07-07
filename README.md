@@ -2,7 +2,7 @@
 
 # hapax-watch
 
-`hapax-watch` is internal apparatus in the Hapax Systems portfolio. It is published, mirrored, or staged for controlled inspection only where a separate visibility decision permits it.
+`hapax-watch` is internal apparatus in the Hapax Systems portfolio. It is visible only where a separate visibility decision permits inspection.
 
 ## Reader promise
 
@@ -138,7 +138,7 @@ No instrumented or screenshot tests yet.
 - Battery percentage is `null` in payloads — the watch-side battery API used here does not expose it on Wear OS.
 - mDNS discovery is implemented (`MdnsDiscovery`) but the resolver currently uses only the cache path; the Tailscale fallback IP is the production carrier.
 
-## Ecosystem
+## Related Repositories
 
 | Repository | Role |
 |-----------|------|
