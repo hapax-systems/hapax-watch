@@ -8,6 +8,10 @@ This repository is part of the Hapax Systems portfolio. Public metadata, issue a
 
 Wear OS biometric/context bridge for the Hapax environment, useful for auditing device integration and privacy boundaries.
 
+## Reader value
+
+Makes biometric and context ingestion inspectable as a bounded, privacy-scoped signal path rather than a consumer health claim.
+
 ## Claim ceiling
 
 Internal single-device companion; not a consumer health product and not a health-efficacy claim.
