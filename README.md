@@ -2,31 +2,32 @@
 
 # hapax-watch
 
-`hapax-watch` is a constituent of the Hapax operating environment. It is research or boundary infrastructure published as an artifact, not a staffed product or community project.
+`hapax-watch` is internal apparatus in the Hapax Systems portfolio. It is visible only where a separate visibility decision permits inspection.
 
-Authorship is indeterminate by design: this codebase is co-produced by Hapax (the system itself), Claude Code, and the operator (Oudepode The Operator). Per the Hapax Manifesto, unsettled contribution is a feature of the work, not a concealment.
+## Reader promise
 
-## What this is, not what it does
+Wear OS biometric/context bridge for the Hapax environment, useful for auditing device integration and privacy boundaries.
 
-Constituent of the Hapax operating environment. Wear OS companion that streams biometric sensor data (heart rate, HRV, skin temperature, activity state) to the council watch receiver and reads an awareness summary from the council logos API. Single operator, single device.
+## Claim ceiling
 
-## Constitutional position
+Internal single-device companion; not a consumer health product and not a health-efficacy claim.
 
-- Single-operator system; no auth, no roles, no contributor onboarding (axiom: `single_user`)
-- Issues are redirect-only; no discussions, no PRs accepted; refusal is the artifact (see `CONTRIBUTING.md` and `SUPPORT.md`)
-- License: PolyForm Strict 1.0.0 (source-available, non-distribution, non-modification)
-- Citation: see `CITATION.cff`; archival DOI: see `.zenodo.json`
+## License and rights
 
-## Linked artifacts
+Single-operator device bridge; source-visible strict unless a separate productized device boundary is created.
 
-- Manifesto: https://hapax.weblog.lol/hapax-manifesto-v0
-- Refusal Brief: https://hapax.weblog.lol/refusal-brief
-- Cohort Disparity Disclosure: https://hapax.weblog.lol/cohort-disparity-disclosure
-- Constitution: https://github.com/hapax-systems/hapax-constitution
+Rendered summary: PolyForm Strict 1.0.0 (source-available, non-distribution, non-modification). See `LICENSE`, `NOTICE.md`, `CITATION.cff`, and `.zenodo.json` for the authority surfaces.
 
-## Inter-repo position
+## Public boundary
 
-Wear OS biometric source. Streams to council watch receiver (:8042); reads awareness summary from council logos API (:8051).
+- Issues are redirect-only; no discussions, no pull requests accepted; see `CONTRIBUTING.md` and `SUPPORT.md`
+- Public copy must use `hapax-systems` organization links for first-party Hapax repositories.
+- Publication, weblog, RSS, social, DOI/archive, and other public fanout paths must route through the governed publication bus or a documented guarded legacy surface.
+- Governance reference: https://github.com/hapax-systems/hapax-constitution
+
+## Portfolio position
+
+Private single-device bridge for context ingestion and local awareness display. It is not a consumer health product.
 
 <!-- hapax-sdlc:preamble:end -->
 
@@ -137,7 +138,7 @@ No instrumented or screenshot tests yet.
 - Battery percentage is `null` in payloads — the watch-side battery API used here does not expose it on Wear OS.
 - mDNS discovery is implemented (`MdnsDiscovery`) but the resolver currently uses only the cache path; the Tailscale fallback IP is the production carrier.
 
-## Ecosystem
+## Related Repositories
 
 | Repository | Role |
 |-----------|------|

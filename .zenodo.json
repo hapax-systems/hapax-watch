@@ -1,12 +1,12 @@
 {
   "title": "hapax-watch",
-  "description": "Constituent of the Hapax operating environment. Wear OS companion that streams biometric sensor data (heart rate, HRV, skin temperature, activity state) to the council watch receiver and reads an awareness summary from the council logos API. Single operator, single device.",
+  "description": "Private Wear OS device bridge for Hapax Systems. Streams approved sensor/context data to council receivers and reads awareness summaries for local operator display.",
   "creators": [
     {
-      "name": "Ryan Kleeberger"
+      "name": "Hapax Systems"
     }
   ],
-  "license": "PolyForm-Strict-1.0.0",
+  "license": "other-closed",
   "access_right": "open",
   "upload_type": "software",
   "keywords": [
@@ -21,9 +21,5 @@
       "scheme": "url"
     }
   ],
-  "communities": [
-    {
-      "identifier": "hapax-publications"
-    }
-  ]
+  "notes": "Repository license: PolyForm Strict 1.0.0 (https://polyformproject.org/licenses/strict/1.0.0/)."
 }
